@@ -160,3 +160,25 @@ exports.schemeDelete = async (req, res) => {
         res.status(401).send(error);
     }
 };
+
+exports.getSchemesByKeyword = async (req, res) => {
+    try {
+        const keyword = req.params.keyword.toLowerCase();
+        const schemes = await Scheme.find({
+            $or: [
+                { niProvider: { $regex: keyword, $options: 'i' } },
+                { schemeName: { $regex: keyword, $options: 'i' } },
+                { genderEligibility: { $regex: keyword, $options: 'i' } },
+            ]
+        }).sort({ _id: -1 });
+
+        if (schemes && schemes.length > 0) {
+            res.status(200).send(schemes);
+        } else {
+            res.status(404).send('No schemes found for the given keyword');
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+};
